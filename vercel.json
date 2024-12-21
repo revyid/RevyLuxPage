@@ -14,7 +14,17 @@
       "source": "/index.html",
       "destination": "/login.html",
       "permanent": true
-    }
+    },
+    {
+      "source": "/ip",
+      "destination": "https://ipads-revylux.vercel.app",
+      "permanent": true
+    },
+    {
+      "source": "/ip.html",
+      "destination": "https://ipads-revylux.vercel.app",
+      "permanent": true
+    },
   ],
   "rewrites": [
     {
