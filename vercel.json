@@ -24,7 +24,7 @@
       "source": "/ip.html",
       "destination": "https://ipads-revylux.vercel.app",
       "permanent": true
-    },
+    }
   ],
   "rewrites": [
     {
