@@ -4,6 +4,16 @@
       "source": "/404",
       "destination": "/404.html",
       "permanent": false
+    },
+    {
+      "source": "/index",
+      "destination": "/login.html",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/login.html",
+      "permanent": true
     }
   ],
   "rewrites": [
