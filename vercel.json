@@ -6,10 +6,11 @@
       "permanent": false
     }
   ],
+{
   "rewrites": [
     {
-      "source": "/:path*.html",
-      "destination": "/:path*"
+      "source": "/:path*",
+      "destination": "/:path*.html"
     }
   ]
 }
