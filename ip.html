@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Geolocation Explorer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+        <link rel="stylesheet" href=".static/css/ip.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>IP Geolocation Explorer</h1>
+            <p>Discover detailed information about any IP address</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <svg class="search-icon" viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+                <input type="text" class="search-input" placeholder="Enter IP address..." id="ipInput">
+            </div>
+        </div>
+
+        <div class="loading">
+            <div class="loading-spinner"></div>
+        </div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <div class="info-card" id="infoCard">
+            <div class="info-grid" id="info">
+                Loading...
+            </div>
+        </div>
+    </div>
+
+    <script src="./static/js/ip.js"></script>
+</body>
+</html>
