@@ -6,23 +6,8 @@
       "permanent": false
     },
     {
-      "source": "/index",
-      "destination": "/login.html",
-      "permanent": true
-    },
-    {
-      "source": "/index.html",
-      "destination": "/login.html",
-      "permanent": true
-    },
-    {
-      "source": "/ip",
-      "destination": "https://ipads-revylux.vercel.app",
-      "permanent": true
-    },
-    {
-      "source": "/ip.html",
-      "destination": "https://ipads-revylux.vercel.app",
+      "source": "/home",
+      "destination": "/index.html",
       "permanent": true
     }
   ],
@@ -33,7 +18,7 @@
     },
     {
       "source": "/",
-      "destination": "/login.html"
+      "destination": "/index.html"
     }
   ]
 }
