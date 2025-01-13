@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Uptime Tracker</title>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 50px;
+            font-family: Arial, sans-serif;
+        }
+        .uptime-display {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .reset-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .reset-button:hover {
+            background-color: #cc0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>System Uptime</h1>
+        <div id="uptime" class="uptime-display">
+            Calculating...
+        </div>
+        <button onclick="window.resetUptime('uptime')" class="reset-button">
+            Reset Uptime
+        </button>
+    </div>
+
+    <script type="module">
+        import { calculateUptime, resetUptime } from "./static/js/activity.js";
+        
+        // Expose resetUptime to window for the button onclick
+        window.resetUptime = resetUptime;
+        
+        // Start uptime calculation
+        calculateUptime("uptime");
+    </script>
+</body>
+</html>
