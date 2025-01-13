@@ -44,30 +44,73 @@ export async function updateAndDisplayViews(elementId) {
   }
 }
 
-// Fungsi untuk menghitung uptime
-export function calculateUptime(elementId) {
-  let startTime = localStorage.getItem("startTime");
-  console.log("Start Time from localStorage:", startTime); // Debugging log
 
-  // Jika belum ada startTime, set waktu mulai
-  if (!startTime) {
-    const currentTime = new Date().getTime();
-    console.log("Setting start time:", currentTime); // Debugging log
-    localStorage.setItem("startTime", currentTime);
-    startTime = currentTime; // Pastikan startTime sudah di-set
+// Fungsi untuk menghitung uptime menggunakan Realtime Database
+export async function calculateUptime(elementId) {
+  const uptimeRef = ref(database, 'uptime/startTime');
+  
+  try {
+    // Cek apakah sudah ada startTime di database
+    const snapshot = await get(uptimeRef);
+    let startTime;
+    
+    if (!snapshot.exists()) {
+      // Jika belum ada startTime, set waktu mulai
+      startTime = new Date().getTime();
+      await set(uptimeRef, startTime);
+      console.log("Setting start time in Firebase:", startTime);
+    } else {
+      startTime = snapshot.val();
+      console.log("Start Time from Firebase:", startTime);
+    }
+
+    // Update uptime setiap detik
+    setInterval(() => {
+      const currentTime = new Date().getTime();
+      const uptime = currentTime - startTime;
+      const uptimeSeconds = Math.floor(uptime / 1000);
+      const hours = Math.floor(uptimeSeconds / 3600);
+      const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+      const seconds = uptimeSeconds % 60;
+
+      // Tampilkan uptime di elemen HTML
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.textContent = `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
+      }
+      
+      console.log(`Uptime: ${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    // Listen untuk perubahan startTime
+    onValue(uptimeRef, (snapshot) => {
+      if (snapshot.exists()) {
+        startTime = snapshot.val();
+        console.log("Start time updated:", startTime);
+      }
+    });
+
+  } catch (error) {
+    console.error("Error in calculateUptime:", error);
+    document.getElementById(elementId).textContent = "Error calculating uptime";
   }
+}
 
-  // Update uptime setiap detik
-  setInterval(() => {
-    const currentTime = new Date().getTime();
-    const uptime = currentTime - startTime; // Waktu dalam milidetik
-    const uptimeSeconds = Math.floor(uptime / 1000); // Uptime dalam detik
-    const hours = Math.floor(uptimeSeconds / 3600);
-    const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-    const seconds = uptimeSeconds % 60;
-
-    // Tampilkan uptime di elemen HTML
-    document.getElementById(elementId).textContent = `${hours} hours, ${minutes} minutes, ${seconds} seconds`;
-    console.log(`Uptime: ${hours} hours, ${minutes} minutes, ${seconds} seconds`); // Debugging log
-  }, 1000); // Update setiap detik
+// Fungsi untuk reset uptime
+export async function resetUptime(elementId) {
+  const uptimeRef = ref(database, 'uptime/startTime');
+  
+  try {
+    // Set waktu baru
+    const newStartTime = new Date().getTime();
+    await set(uptimeRef, newStartTime);
+    
+    console.log("Uptime reset, new start time:", newStartTime);
+    
+    // Update display langsung
+    document.getElementById(elementId).textContent = "0 hours, 0 minutes, 0 seconds";
+  } catch (error) {
+    console.error("Error resetting uptime:", error);
+    document.getElementById(elementId).textContent = "Error resetting uptime";
+  }
 }
