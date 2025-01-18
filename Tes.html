@@ -1,315 +1,686 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVYLUX | Space Portfolio</title>
+    <title>REVYLUX: Space Theme</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
-        
-        * {
-            font-family: 'Space Grotesk', sans-serif;
-            scroll-behavior: smooth;
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        space: {
+                            dark: '#030014',
+                            light: '#0A0A1F',
+                            accent: '#4a5568',
+                            glow: '#3b82f6'
+                        }
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite',
+                        'orbit': 'orbit 20s linear infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        },
+                        glow: {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.5 }
+                        },
+                        orbit: {
+                            '0%': { transform: 'rotate(0deg) translateX(150px)' },
+                            '100%': { transform: 'rotate(360deg) translateX(150px)' }
+                        }
+                    }
+                }
+            }
         }
-
-        .space-bg {
-            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
-        }
-
-        .glow {
-            text-shadow: 0 0 10px rgba(100, 149, 237, 0.5),
-                         0 0 20px rgba(100, 149, 237, 0.3),
-                         0 0 30px rgba(100, 149, 237, 0.2);
-        }
-
-        .star {
-            position: absolute;
-            background: #fff;
-            border-radius: 50%;
-            animation: twinkle var(--duration) infinite;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .orbit {
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
-            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
-        }
-
-        .hover-glow:hover {
-            box-shadow: 0 0 15px rgba(100, 149, 237, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .section {
-            min-height: 100vh;
-            scroll-snap-align: start;
-        }
-
-        .scroll-container {
-            scroll-snap-type: y mandatory;
-            overflow-y: scroll;
-            height: 100vh;
-        }
-
-        .nav-blur {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-    </style>
+    </script>
 </head>
-<body class="space-bg overflow-hidden">
-    <!-- Stars Background -->
-    <div id="stars" class="fixed inset-0 z-0"></div>
+<body class="bg-space-dark min-h-screen text-gray-100 overflow-x-hidden">
+    <!-- Dynamic Background -->
+    <canvas id="starfield" class="fixed inset-0 w-full h-full pointer-events-none"></canvas>
+    
+    <!-- Glow Effects -->
+    <div class="fixed inset-0 pointer-events-none">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow"></div>
+        <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow delay-1000"></div>
+        <div class="absolute bottom-1/4 left-1/3 w-96 h-96 bg-indigo-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow delay-2000"></div>
+    </div>
 
-    <!-- Scroll Container -->
-    <div class="scroll-container">
-        <!-- Navigation -->
-        <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
-            <div class="nav-blur bg-opacity-20 bg-black">
-                <div class="container mx-auto px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <a href="#" class="text-2xl font-bold text-blue-400 glow">REVYLUX</a>
-                        <div class="hidden md:flex space-x-8">
-                            <a href="#home" class="text-gray-300 hover:text-blue-400 transition-colors">Home</a>
-                            <a href="#features" class="text-gray-300 hover:text-blue-400 transition-colors">Features</a>
-                            <a href="#contact" class="text-gray-300 hover:text-blue-400 transition-colors">Contact</a>
-                        </div>
-                        <button class="md:hidden text-white" id="menuBtn">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-16 6h16"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <!-- Mobile Menu -->
-            <div class="hidden md:hidden" id="mobileMenu">
-                <div class="nav-blur bg-opacity-95 bg-black px-4 py-2">
-                    <a href="#home" class="block py-2 text-gray-300 hover:text-blue-400">Home</a>
-                    <a href="#features" class="block py-2 text-gray-300 hover:text-blue-400">Features</a>
-                    <a href="#contact" class="block py-2 text-gray-300 hover:text-blue-400">Contact</a>
+    <!-- Header -->
+    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-500" id="header">
+        <nav class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text hover:scale-105 transition-transform">
+                    REVYLUX
+                </a>
+                
+                <button class="lg:hidden text-gray-100 focus:outline-none" id="mobileMenuBtn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-16 6h16"/>
+                    </svg>
+                </button>
+
+                <div class="hidden lg:flex items-center space-x-8" id="navLinks">
+                    <a href="#home" class="nav-link hover:text-space-glow transition-colors">Home</a>
+                    <a href="#packages" class="nav-link hover:text-space-glow transition-colors">Projects</a>
+                    <a href="#features" class="nav-link hover:text-space-glow transition-colors">Features</a>
+                    <a href="#news" class="nav-link hover:text-space-glow transition-colors">News</a>
+                    <a href="#contact" class="nav-link hover:text-space-glow transition-colors">Contact</a>
                 </div>
             </div>
         </nav>
 
-        <!-- Hero Section -->
-        <section id="home" class="section relative flex items-center justify-center overflow-hidden">
-            <div class="container mx-auto px-6 text-center relative z-10">
-                <h1 class="text-6xl md:text-8xl font-bold text-blue-400 mb-6 glow opacity-0" id="heroTitle">
+        <div class="lg:hidden hidden bg-space-dark/95 backdrop-blur-lg absolute w-full" id="mobileMenu">
+            <div class="container mx-auto px-6 py-4 space-y-4">
+                <a href="#home" class="block hover:text-space-glow transition-colors">Home</a>
+                <a href="#packages" class="block hover:text-space-glow transition-colors">Projects</a>
+                <a href="#features" class="block hover:text-space-glow transition-colors">Features</a>
+                <a href="#news" class="block hover:text-space-glow transition-colors">News</a>
+                <a href="#contact" class="block hover:text-space-glow transition-colors">Contact</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden perspective-1000">
+        <!-- Floating Elements -->
+        <div class="absolute inset-0 pointer-events-none perspective-1000">
+            <div class="absolute top-1/4 left-1/4 w-16 h-16 animate-orbit">
+                <div class="w-full h-full bg-blue-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
+            </div>
+            <div class="absolute top-1/3 right-1/4 w-12 h-12 animate-orbit" style="animation-delay: -5s;">
+                <div class="w-full h-full bg-purple-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
+            </div>
+            <div class="absolute bottom-1/4 left-1/3 w-20 h-20 animate-orbit" style="animation-delay: -10s;">
+                <div class="w-full h-full bg-pink-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
+            </div>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <div class="space-y-8 transform-gpu">
+                <h1 class="text-7xl md:text-9xl font-bold mb-6 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text animate-float inline-block">
                     REVYLUX
                 </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-8 opacity-0" id="heroSubtitle">
-                    Explore the digital universe with innovative web solutions
-                </p>
-                <div class="flex justify-center space-x-4 opacity-0" id="heroStats">
-                    <div class="bg-black bg-opacity-50 p-4 rounded-lg backdrop-blur-md">
-                        <h3 class="text-blue-400 text-lg font-semibold">Server Uptime</h3>
-                        <p class="text-white" id="uptime">Loading...</p>
-                    </div>
-                    <div class="bg-black bg-opacity-50 p-4 rounded-lg backdrop-blur-md">
-                        <h3 class="text-blue-400 text-lg font-semibold">Total Views</h3>
-                        <p class="text-white" id="totalViews">Loading...</p>
-                    </div>
-                </div>
-            </div>
-            <div class="absolute inset-0 z-0">
-                <canvas id="heroCanvas"></canvas>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section id="features" class="section relative">
-            <div class="container mx-auto px-6 py-20">
-                <h2 class="text-4xl md:text-5xl font-bold text-blue-400 text-center mb-16 glow">
-                    Featured Projects
+                
+                <h2 class="text-4xl md:text-5xl font-bold text-space-glow animate-pulse-slow inline-flex items-center gap-4">
+                    <i class="fas fa-crown"></i>
+                    <span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">REVYSID</span>
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- IP Tracking -->
-                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
-                        <div class="text-blue-400 text-4xl mb-4">
-                            <i class="fas fa-search-location"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-4">IP Tracking</h3>
-                        <p class="text-gray-300 mb-6">Advanced IP tracking system with detailed geolocation data</p>
-                        <a href="./ip" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition-all">
-                            View Project
-                        </a>
-                    </div>
+                
+                <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                    Reach for the future with courage, for every step forward brings you closer to your dreams
+                </p>
 
-                    <!-- Authentication -->
-                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
-                        <div class="text-blue-400 text-4xl mb-4">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-white mb-4">Authentication</h3>
-                        <p class="text-gray-300 mb-6">Secure login system with Firebase integration</p>
-                        <a href="./login" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition-all">
-                            View Project
-                        </a>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                    <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-blue-500/20">
+                        <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
+                            <i class="fas fa-clock text-2xl"></i>Server UpTime
+                        </h3>
+                        <p id="uptime" class="text-gray-300 text-lg">loading..</p>
                     </div>
+                    <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-purple-500/20">
+                        <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
+                            <i class="fas fa-users text-2xl"></i>Total View
+                        </h3>
+                        <p id="totalViews" class="text-gray-300 text-lg">loading..</p>
+                    </div>
+                </div>
 
-                    <!-- Chat System -->
-                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
-                        <div class="text-blue-400 text-4xl mb-4">
-                            <i class="fas fa-comments"></i>
+                <a href="#packages" class="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 group">
+                    Explore Projects
+                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl text-space-glow"></i>
+        </div>
+    </section>
+
+    <!-- Projects Section -->
+    <section id="packages" class="min-h-screen py-24 relative flex items-center">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16 space-y-4">
+                <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
+                    Web Dev Projects
+                </h2>
+                <p class="text-xl text-gray-400">Innovation begins where comfort ends</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- IP Tracking Card -->
+                <div class="group">
+                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-blue-500/20 overflow-hidden">
+                        <!-- Background Pattern -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="text-4xl text-space-glow mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                                <i class="fas fa-search-location"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-4">IP TRACKING</h3>
+                            
+                            <img src="/api/placeholder/400/200" alt="IP Tracking Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
+                            
+                            <p class="text-gray-400 mb-6">Discover detailed information about any IP address</p>
+                            
+                            <div class="space-y-4 mb-8">
+                                <div class="flex items-center gap-2 text-gray-300">
+                                    <i class="fab fa-html5 text-orange-500"></i>
+                                    <i class="fab fa-js text-yellow-400"></i>
+                                    <span>Languages</span>
+                                </div>
+                                <div class="text-gray-300">
+                                    <span>API: ipinfo.io</span>
+                                </div>
+                            </div>
+                            
+                            <a href="./ip" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 group">
+                                Select Project
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                            </a>
                         </div>
-                        <h3 class="text-2xl font-bold text-white mb-4">Real-Time Chat</h3>
-                        <p class="text-gray-300 mb-6">Instant messaging system with real-time updates</p>
-                        <span class="inline-block bg-gray-600 text-white px-6 py-2 rounded-full cursor-not-allowed">
-                            Coming Soon
-                        </span>
+                    </div>
+                </div>
+
+                <!-- Login Card -->
+                <div class="group">
+                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-purple-500/20 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="text-4xl text-space-glow mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                                <i class="fa fa-film"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-4">Login</h3>
+                            
+                            <img src="/api/placeholder/400/200" alt="Login Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
+                            
+                            <p class="text-gray-400 mb-6">Login to this web</p>
+                            
+                            <div class="space-y-4 mb-8">
+                                <div class="flex items-center gap-2 text-gray-300">
+                                    <i class="fab fa-html5 text-orange-500"></i>
+                                    <i class="fab fa-js text-yellow-400"></i>
+                                    <span>Languages</span>
+                                </div>
+                                <div class="text-gray-300">
+                                    <span>API: firebase.com</span>
+                                </div>
+                            </div><a href="./login" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium transition-all hover:scale-105 group">
+                                Select Project
+                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RealTime Chat Card -->
+                <div class="group">
+                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-pink-500/20 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="text-4xl text-space-glow mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            
+                            <h3 class="text-2xl font-bold mb-4">RealTime Chat</h3>
+                            
+                            <img src="/api/placeholder/400/200" alt="Chat Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
+                            
+                            <p class="text-gray-400 mb-6">Real-time chat for instant messaging and live updates</p>
+                            
+                            <div class="space-y-4 mb-8">
+                                <div class="text-gray-300">
+                                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400">Coming Soon</span>
+                                </div>
+                            </div>
+                            
+                            <button disabled class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-medium opacity-50 cursor-not-allowed">
+                                Coming Soon
+                                <i class="fas fa-lock ml-2"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Contact Section -->
-        <section id="contact" class="section relative flex items-center">
-            <div class="container mx-auto px-6">
-                <div class="max-w-4xl mx-auto bg-black bg-opacity-50 rounded-xl p-8 backdrop-blur-md">
-                    <h2 class="text-4xl font-bold text-blue-400 text-center mb-8 glow">Connect With Us</h2>
-                    <div class="flex flex-wrap justify-center gap-6">
-                        <a href="https://discord.gg/ZK6jrrK2" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
-                            <i class="fab fa-discord text-2xl"></i>
-                            <span>Discord</span>
-                        </a>
-                        <a href="#" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
-                            <i class="fab fa-twitter text-2xl"></i>
-                            <span>Twitter</span>
-                        </a>
-                        <a href="#" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
-                            <i class="fab fa-instagram text-2xl"></i>
-                            <span>Instagram</span>
-                        </a>
+    <!-- Features Section -->
+    <section id="features" class="min-h-screen py-24 relative flex items-center bg-space-light/20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
+                    Core Features
+                </h2>
+                <p class="text-xl text-gray-400 mt-4">Explore our innovative solutions</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Feature 1 -->
+                <div class="group">
+                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-blue-500/20 transition-all duration-500 hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <i class="fas fa-rocket text-2xl text-blue-400"></i>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold mb-4 text-white">Fast Performance</h3>
+                            <p class="text-gray-400">Lightning-fast load times and smooth animations for the best user experience</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="group">
+                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-purple-500/20 transition-all duration-500 hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <i class="fas fa-mobile-alt text-2xl text-purple-400"></i>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold mb-4 text-white">Responsive Design</h3>
+                            <p class="text-gray-400">Perfectly optimized for all devices and screen sizes</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="group">
+                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-pink-500/20 transition-all duration-500 hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        
+                        <div class="relative z-10">
+                            <div class="w-16 h-16 rounded-full bg-pink-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                                <i class="fas fa-shield-alt text-2xl text-pink-400"></i>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold mb-4 text-white">Secure & Reliable</h3>
+                            <p class="text-gray-400">Built with the latest security standards and reliable infrastructure</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative py-16 bg-space-light/30 backdrop-blur-lg">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">About</h3>
+                    <p class="text-gray-400">Frontend developer focused on building responsive, user-friendly web applications. Passionate about learning and tackling new challenges in web development.</p>
+                    <div class="flex space-x-4">
+                        <a href="https://discord.gg/ZK6jrrK2" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-blue-500/20 transition-colors group">
+                            <i class="fab fa-discord text-xl text-gray-400 group-hover:text-blue-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-purple-500/20 transition-colors group">
+                            <i class="fab fa-twitter text-xl text-gray-400 group-hover:text-purple-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-pink-500/20 transition-colors group">
+                            <i class="fab fa-instagram text-xl text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-red-500/20 transition-colors group">
+                            <i class="fab fa-youtube text-xl text-gray-400 group-hover:text-red-400 transition-colors"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Quick Links</h3>
+                    <ul class="space-y-4">
+                        <li>
+                            <a href="#home" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#packages" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Projects
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#features" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Features
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#news" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                News
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Support</h3>
+                    <ul class="space-y-4">
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Help Center
+                            </a>
+                        </li>
+                        <li>
+                            <a href="./terms-of-service" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Terms of Service
+                            </a>
+                        </li>
+                        <li>
+                            <a href="./privacy-policy" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Privacy Policy
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#contact" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
+                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                Contact Us
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
-        // Three.js Background
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({
-            canvas: document.getElementById('heroCanvas'),
-            alpha: true
-        });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-
-        // Create stars
-        const starsGeometry = new THREE.BufferGeometry();
-        const starsMaterial = new THREE.PointsMaterial({
-            color: 0xFFFFFF,
-            size: 0.1
-        });
-
-        const starsVertices = [];
-        for(let i = 0; i < 10000; i++) {
-            const x = (Math.random() - 0.5) * 2000;
-            const y = (Math.random() - 0.5) * 2000;
-            const z = -Math.random() * 2000;
-            starsVertices.push(x, y, z);
-        }
-
-        starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
-        const stars = new THREE.Points(starsGeometry, starsMaterial);
-        scene.add(stars);
-
-        camera.position.z = 5;
-
-        function animate() {
-            requestAnimationFrame(animate);
-            stars.rotation.y += 0.0002;
-            stars.rotation.x += 0.0001;
-            renderer.render(scene, camera);
-        }
-        animate();
-
-        // Resize handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+        // Three.js Starfield Background
+        const createStarfield = () => {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('starfield'), alpha: true });
+            
             renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            
+            // Create stars
+            const starGeometry = new THREE.BufferGeometry();
+            const starMaterial = new THREE.PointsMaterial({
+                color: 0xFFFFFF,
+                size: 0.1,
+                transparent: true
+            });
+            
+            const starVertices = [];
+            for(let i = 0; i < 15000; i++) {
+                const x = (Math.random() - 0.5) * 2000;
+                const y = (Math.random() - 0.5) * 2000;
+                const z = -Math.random() * 2000;
+                starVertices.push(x, y, z);
+            }
+            
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const stars = new THREE.Points(starGeometry, starMaterial);
+            scene.add(stars);
+            
+            camera.position.z = 5;
+            
+            // Animation
+            const animate = () => {
+                requestAnimationFrame(animate);
+                stars.rotation.x += 0.0002;
+                stars.rotation.y += 0.0001;
+                renderer.render(scene, camera);
+            };
+            
+            animate();
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                const newWidth = window.innerWidth;
+                const newHeight = window.innerHeight;
+                camera.aspect = newWidth / newHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(newWidth, newHeight);
+            });
+        };
 
-        // GSAP Animations
+        // Initialize GSAP
         gsap.registerPlugin(ScrollTrigger);
 
-        // Hero animations
-        gsap.from("#heroTitle", {
-            duration: 1.5,
-            y: 100,
-            opacity: 0,
-            ease: "power4.out"
-        });
-
-        gsap.from("#heroSubtitle", {
-            duration: 1.5,
-            y: 50,
-            opacity: 0,
-            ease: "power4.out",
-            delay: 0.5
-        });
-
-        gsap.from("#heroStats", {
-            duration: 1.5,
-            y: 50,
-            opacity: 0,
-            ease: "power4.out",
-            delay: 1
-        });
-
-        // Features animations
-        gsap.from(".feature-card", {
-            scrollTrigger: {
-                trigger: "#features",
-                start: "top center",
-                toggleActions: "play none none reverse"
-            },
-            duration: 1,
-            y: 100,
-            opacity: 0,
-            stagger: 0.2,
-            ease: "power4.out"
-        });
-
-        // Mobile menu
-        const menuBtn = document.getElementById('menuBtn');
+        // Mobile menu functionality
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
-        
-        menuBtn.addEventListener('click', () => {
+        const header = document.getElementById('header');
+
+        mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        // Navbar scroll effect
-        const navbar = document.getElementById('navbar');
+        // Scroll effects
         window.addEventListener('scroll', () => {
             if (window.scrollY > 50) {
-                navbar.classList.add('py-2');
-                navbar.classList.remove('py-4');
+                header.classList.add('bg-space-dark/95', 'backdrop-blur-lg', 'shadow-lg', 'border-b', 'border-blue-500/20');
             } else {
-                navbar.classList.add('py-4');
-                navbar.classList.remove('py-2');
+                header.classList.remove('bg-space-dark/95', 'backdrop-blur-lg', 'shadow-lg', 'border-b', 'border-blue-500/20');
             }
         });
 
-        // Import and initialize activity tracking
-        import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
-        updateAndDisplayViews("totalViews");
-        calculateUptime("uptime");
+        // GSAP Animations
+        const setupAnimations = () => {
+            // Header fade in
+            gsap.from('header', {
+                y: -100,
+                opacity: 0,
+                duration: 1,
+                ease: 'power4.out'
+            });
+
+            // Hero content animation
+            gsap.from('#home .container > *', {
+                y: 100,
+                opacity: 0,
+                duration: 1,
+                stagger: 0.2,
+                ease: 'power4.out'
+            });
+
+            // Project cards animation
+            gsap.utils.toArray('#packages .group').forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 100,
+                    opacity: 0,
+                    duration: 1,
+                    delay: index * 0.2,
+                    ease: 'power4.out'
+                });
+            });
+
+            // Features animation
+            gsap.utils.toArray('#features .group').forEach((feature, index) => {
+                gsap.from(feature, {
+                    scrollTrigger: {
+                        trigger: feature,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 60,
+                    opacity: 0,
+                    duration: 1,
+                    delay: index * 0.2,
+                    ease: 'power4.out'
+                });
+            });
+
+            // Footer sections animation
+            gsap.utils.toArray('footer > div > div > div').forEach((section, index) => {
+                gsap.from(section, {
+                    scrollTrigger: {
+                        trigger: section,
+                        start: 'top bottom-=50',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    delay: index * 0.2,
+                    ease: 'power4.out'
+                });
+            });
+        };
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    gsap.to(window, {
+                        duration: 1,
+                        scrollTo: {
+                            y: targetElement,
+                            offsetY: 80
+                        },
+                        ease: 'power4.inOut'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Mock data updates
+        const updateMockData = () => {
+            const uptimeElement = document.getElementById('uptime');
+            const viewsElement = document.getElementById('totalViews');
+            
+            // Random uptime between 99.95% and 100%
+            const uptime = (99.95 + Math.random() * 0.05).toFixed(2);
+            uptimeElement.textContent = `${uptime}%`;
+            
+            // Random views between 10k and 100k
+            const views = Math.floor(10000 + Math.random() * 90000);
+            viewsElement.textContent = views.toLocaleString();
+        };
+
+        // Parallax effect on scroll
+        const setupParallax = () => {
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                const parallaxElements = document.querySelectorAll('.animate-float');
+                
+                parallaxElements.forEach(element => {
+                    const speed = 0.5;
+                    element.style.transform = `translateY(${scrolled * speed}px)`;
+                });
+            });
+        };
+
+        // Initialize everything
+        const init = () => {
+            createStarfield();
+            setupAnimations();
+            setupParallax();
+            updateMockData();
+            setInterval(updateMockData, 5000); // Update mock data every 5 seconds
+        };
+
+        // Run initialization when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
     </script>
+
+    <style>
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 0.8; transform: scale(1); }
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: currentColor;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #030014;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Better text rendering */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Prevent blue highlight on mobile */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 </body>
 </html>
