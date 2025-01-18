@@ -550,21 +550,6 @@
                 }
             });
         });
-
-        // Mock data updates
-        const updateMockData = () => {
-            const uptimeElement = document.getElementById('uptime');
-            const viewsElement = document.getElementById('totalViews');
-            
-            // Random uptime between 99.95% and 100%
-            const uptime = (99.95 + Math.random() * 0.05).toFixed(2);
-            uptimeElement.textContent = `${uptime}%`;
-            
-            // Random views between 10k and 100k
-            const views = Math.floor(10000 + Math.random() * 90000);
-            viewsElement.textContent = views.toLocaleString();
-        };
-
         // Parallax effect on scroll
         const setupParallax = () => {
             window.addEventListener('scroll', () => {
@@ -654,5 +639,15 @@
             -webkit-tap-highlight-color: transparent;
         }
     </style>
+    <script type="module">
+    import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
+
+    // Panggil fungsi untuk memperbarui dan menampilkan views
+    updateAndDisplayViews("totalViews");
+
+    // Panggil fungsi untuk menghitung dan menampilkan uptime
+    calculateUptime("uptime");
+        
+    </script>
 </body>
 </html>
