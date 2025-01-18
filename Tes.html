@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REVYLUX | Space Portfolio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Space Grotesk', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .space-bg {
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        }
+
+        .glow {
+            text-shadow: 0 0 10px rgba(100, 149, 237, 0.5),
+                         0 0 20px rgba(100, 149, 237, 0.3),
+                         0 0 30px rgba(100, 149, 237, 0.2);
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .orbit {
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg) translateX(150px) rotate(0deg); }
+            to { transform: rotate(360deg) translateX(150px) rotate(-360deg); }
+        }
+
+        .hover-glow:hover {
+            box-shadow: 0 0 15px rgba(100, 149, 237, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            min-height: 100vh;
+            scroll-snap-align: start;
+        }
+
+        .scroll-container {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+<body class="space-bg overflow-hidden">
+    <!-- Stars Background -->
+    <div id="stars" class="fixed inset-0 z-0"></div>
+
+    <!-- Scroll Container -->
+    <div class="scroll-container">
+        <!-- Navigation -->
+        <nav class="fixed w-full z-50 transition-all duration-300" id="navbar">
+            <div class="nav-blur bg-opacity-20 bg-black">
+                <div class="container mx-auto px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <a href="#" class="text-2xl font-bold text-blue-400 glow">REVYLUX</a>
+                        <div class="hidden md:flex space-x-8">
+                            <a href="#home" class="text-gray-300 hover:text-blue-400 transition-colors">Home</a>
+                            <a href="#features" class="text-gray-300 hover:text-blue-400 transition-colors">Features</a>
+                            <a href="#contact" class="text-gray-300 hover:text-blue-400 transition-colors">Contact</a>
+                        </div>
+                        <button class="md:hidden text-white" id="menuBtn">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-16 6h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Mobile Menu -->
+            <div class="hidden md:hidden" id="mobileMenu">
+                <div class="nav-blur bg-opacity-95 bg-black px-4 py-2">
+                    <a href="#home" class="block py-2 text-gray-300 hover:text-blue-400">Home</a>
+                    <a href="#features" class="block py-2 text-gray-300 hover:text-blue-400">Features</a>
+                    <a href="#contact" class="block py-2 text-gray-300 hover:text-blue-400">Contact</a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="section relative flex items-center justify-center overflow-hidden">
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <h1 class="text-6xl md:text-8xl font-bold text-blue-400 mb-6 glow opacity-0" id="heroTitle">
+                    REVYLUX
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-8 opacity-0" id="heroSubtitle">
+                    Explore the digital universe with innovative web solutions
+                </p>
+                <div class="flex justify-center space-x-4 opacity-0" id="heroStats">
+                    <div class="bg-black bg-opacity-50 p-4 rounded-lg backdrop-blur-md">
+                        <h3 class="text-blue-400 text-lg font-semibold">Server Uptime</h3>
+                        <p class="text-white" id="uptime">Loading...</p>
+                    </div>
+                    <div class="bg-black bg-opacity-50 p-4 rounded-lg backdrop-blur-md">
+                        <h3 class="text-blue-400 text-lg font-semibold">Total Views</h3>
+                        <p class="text-white" id="totalViews">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute inset-0 z-0">
+                <canvas id="heroCanvas"></canvas>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="section relative">
+            <div class="container mx-auto px-6 py-20">
+                <h2 class="text-4xl md:text-5xl font-bold text-blue-400 text-center mb-16 glow">
+                    Featured Projects
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- IP Tracking -->
+                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
+                        <div class="text-blue-400 text-4xl mb-4">
+                            <i class="fas fa-search-location"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">IP Tracking</h3>
+                        <p class="text-gray-300 mb-6">Advanced IP tracking system with detailed geolocation data</p>
+                        <a href="./ip" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition-all">
+                            View Project
+                        </a>
+                    </div>
+
+                    <!-- Authentication -->
+                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
+                        <div class="text-blue-400 text-4xl mb-4">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">Authentication</h3>
+                        <p class="text-gray-300 mb-6">Secure login system with Firebase integration</p>
+                        <a href="./login" class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full transition-all">
+                            View Project
+                        </a>
+                    </div>
+
+                    <!-- Chat System -->
+                    <div class="bg-black bg-opacity-50 rounded-xl p-6 backdrop-blur-md transform hover:scale-105 transition-all hover-glow">
+                        <div class="text-blue-400 text-4xl mb-4">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-4">Real-Time Chat</h3>
+                        <p class="text-gray-300 mb-6">Instant messaging system with real-time updates</p>
+                        <span class="inline-block bg-gray-600 text-white px-6 py-2 rounded-full cursor-not-allowed">
+                            Coming Soon
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section relative flex items-center">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto bg-black bg-opacity-50 rounded-xl p-8 backdrop-blur-md">
+                    <h2 class="text-4xl font-bold text-blue-400 text-center mb-8 glow">Connect With Us</h2>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="https://discord.gg/ZK6jrrK2" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
+                            <i class="fab fa-discord text-2xl"></i>
+                            <span>Discord</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
+                            <i class="fab fa-twitter text-2xl"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a href="#" class="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors">
+                            <i class="fab fa-instagram text-2xl"></i>
+                            <span>Instagram</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Three.js Background
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({
+            canvas: document.getElementById('heroCanvas'),
+            alpha: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Create stars
+        const starsGeometry = new THREE.BufferGeometry();
+        const starsMaterial = new THREE.PointsMaterial({
+            color: 0xFFFFFF,
+            size: 0.1
+        });
+
+        const starsVertices = [];
+        for(let i = 0; i < 10000; i++) {
+            const x = (Math.random() - 0.5) * 2000;
+            const y = (Math.random() - 0.5) * 2000;
+            const z = -Math.random() * 2000;
+            starsVertices.push(x, y, z);
+        }
+
+        starsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starsVertices, 3));
+        const stars = new THREE.Points(starsGeometry, starsMaterial);
+        scene.add(stars);
+
+        camera.position.z = 5;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            stars.rotation.y += 0.0002;
+            stars.rotation.x += 0.0001;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Hero animations
+        gsap.from("#heroTitle", {
+            duration: 1.5,
+            y: 100,
+            opacity: 0,
+            ease: "power4.out"
+        });
+
+        gsap.from("#heroSubtitle", {
+            duration: 1.5,
+            y: 50,
+            opacity: 0,
+            ease: "power4.out",
+            delay: 0.5
+        });
+
+        gsap.from("#heroStats", {
+            duration: 1.5,
+            y: 50,
+            opacity: 0,
+            ease: "power4.out",
+            delay: 1
+        });
+
+        // Features animations
+        gsap.from(".feature-card", {
+            scrollTrigger: {
+                trigger: "#features",
+                start: "top center",
+                toggleActions: "play none none reverse"
+            },
+            duration: 1,
+            y: 100,
+            opacity: 0,
+            stagger: 0.2,
+            ease: "power4.out"
+        });
+
+        // Mobile menu
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('py-2');
+                navbar.classList.remove('py-4');
+            } else {
+                navbar.classList.add('py-4');
+                navbar.classList.remove('py-2');
+            }
+        });
+
+        // Import and initialize activity tracking
+        import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
+        updateAndDisplayViews("totalViews");
+        calculateUptime("uptime");
+    </script>
+</body>
+</html>
