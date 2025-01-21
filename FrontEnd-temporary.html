@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrontEnd Project</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 bg-gray-900/80 backdrop-blur-md">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-20">
+                <a href="#" class="text-2xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    RevyLux Project
+                </a>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#home" class="hover:text-purple-500 transition-colors">Home</a>
+                    <a href="#services" class="hover:text-purple-500 transition-colors">Services</a>
+                    <a href="#portfolio" class="hover:text-purple-500 transition-colors">Portfolio</a>
+                    <a href="#contact" class="hover:text-purple-500 transition-colors">Contact</a>
+                </div>
+                <button class="md:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+               <div id="mobileMenu" class="fixed inset-0 bg-gray-900/95 z-40 transform translate-x-full transition-transform duration-300">
+    <div class="flex flex-col h-full justify-center items-center space-y-8 p-4">
+        <button id="closeMenu" class="absolute top-6 right-6">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+        <a href="#home" class="text-2xl hover:text-purple-500 transition-colors">Home</a>
+        <a href="#services" class="text-2xl hover:text-purple-500 transition-colors">Services</a>
+        <a href="#portfolio" class="text-2xl hover:text-purple-500 transition-colors">Portfolio</a>
+        <a href="#contact" class="text-2xl hover:text-purple-500 transition-colors">Contact</a>
+    </div>
+</div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20"></div>
+        <div class="container mx-auto px-4 relative">
+            <div class="text-center" data-aos="fade-up">
+                <h1 class="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+                    Transform Your Vision Into Reality
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-300 mb-8">
+                    We create stunning digital experiences that captivate and convert
+                </p>
+                <button class="bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-full text-lg font-semibold hover:scale-105 transition-transform">
+                    Get Started
+                </button>
+            </div>
+        </div>
+        <div class="absolute -bottom-32 left-0 right-0 h-64 bg-gradient-to-t from-gray-900 to-transparent"></div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="py-20">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-16" data-aos="fade-up">Our Services</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-800 p-8 rounded-2xl hover:scale-105 transition-transform" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-16 h-16 bg-purple-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Web Design</h3>
+                    <p class="text-gray-400">Create stunning, responsive websites that look great on all devices.</p>
+                </div>
+                <div class="bg-gray-800 p-8 rounded-2xl hover:scale-105 transition-transform" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-16 h-16 bg-pink-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">UI/UX Design</h3>
+                    <p class="text-gray-400">Design intuitive user interfaces and exceptional user experiences.</p>
+                </div>
+                <div class="bg-gray-800 p-8 rounded-2xl hover:scale-105 transition-transform" data-aos="fade-up" data-aos-delay="300">
+                    <div class="w-16 h-16 bg-purple-500 rounded-lg mb-6 flex items-center justify-center">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4">Development</h3>
+                    <p class="text-gray-400">Build robust and scalable web applications using modern technologies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Section -->
+    <section id="portfolio" class="py-20 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold text-center mb-16" data-aos="fade-up">Our Work</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="group relative overflow-hidden rounded-2xl" data-aos="fade-up" data-aos-delay="100">
+                    <img src="https://s1.zerochan.net/Violet.Evergarden.%28Character%29.600.3537976.jpg" alt="Project 1" class="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">E-commerce Platform</h3>
+                            <p class="text-gray-300">Modern shopping experience</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden rounded-2xl" data-aos="fade-up" data-aos-delay="200">
+                    <img src="https://s1.zerochan.net/Violet.Evergarden.%28Character%29.600.3627033.jpg" alt="Project 2" class="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">Mobile App</h3>
+                            <p class="text-gray-300">Cross-platform solution</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="group relative overflow-hidden rounded-2xl" data-aos="fade-up" data-aos-delay="300">
+                    <img src="https://s1.zerochan.net/Violet.Evergarden.Gaiden.600.2707130.jpg" alt="Project 3" class="w-full h-64 object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2">SaaS Dashboard</h3>
+                            <p class="text-gray-300">Analytics and management</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-4xl font-bold mb-16" data-aos="fade-up">Let's Work Together</h2>
+                <form class="space-y-6" data-aos="fade-up">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <input type="text" placeholder="Name" class="w-full px-6 py-4 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="email" placeholder="Email" class="w-full px-6 py-4 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <textarea rows="6" placeholder="Message" class="w-full px-6 py-4 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    <button class="bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 rounded-full text-lg font-semibold hover:scale-105 transition-transform">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400">© 2025 CreativeX. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors">Twitter</a>
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors">Instagram</a>
+                    <a href="#" class="text-gray-400 hover:text-purple-500 transition-colors">LinkedIn</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true,
+        });
+
+       const mobileMenuBtn = document.querySelector('button.md\\:hidden');
+const mobileMenu = document.getElementById('mobileMenu');
+const closeMenuBtn = document.getElementById('closeMenu');
+const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+
+function toggleMenu() {
+    mobileMenu.classList.toggle('translate-x-full');
+    document.body.classList.toggle('overflow-hidden');
+}
+
+mobileMenuBtn.addEventListener('click', toggleMenu);
+closeMenuBtn.addEventListener('click', toggleMenu);
+
+// Menutup menu saat link diklik
+mobileMenuLinks.forEach(link => {
+    link.addEventListener('click', () => {
+        toggleMenu();
+        
+        // Smooth scroll ke section
+        const targetId = link.getAttribute('href').substring(1);
+        const targetSection = document.getElementById(targetId);
+        targetSection.scrollIntoView({ behavior: 'smooth' });
+    });
+});
+    </script>
+</body>
+</html>
