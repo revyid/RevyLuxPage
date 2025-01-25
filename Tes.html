@@ -189,7 +189,7 @@
                             <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
                                 <i class="fas fa-users text-2xl icon-hover"></i>Total Visitors
                             </h3>
-                            <p id="totalview" class="text-gray-300 text-lg">loading...</p>
+                            <p id="totalViews" class="text-gray-300 text-lg">loading...</p>
                         </div>
                     </div>
 
@@ -505,7 +505,6 @@
         const init = () => {
             createStarfield();
             setupAnimations();
-            updateServerData();
         };
         // Run initialization
         document.addEventListener('DOMContentLoaded', init);
