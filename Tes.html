@@ -507,8 +507,11 @@
             setupAnimations();
             updateServerData();
         };
-
-import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
+        // Run initialization
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+    <script type="module">
+    import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";>
 
     // Panggil fungsi untuk memperbarui dan menampilkan views
     updateAndDisplayViews("totalViews");
@@ -516,8 +519,6 @@ import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js"
     // Panggil fungsi untuk menghitung dan menampilkan uptime
     calculateUptime("uptime");
 
-        // Run initialization
-        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
