@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REVYLUX: Space Theme</title>
+    <title>REVYLUX: Space Theme Enhanced</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         tailwind.config = {
@@ -26,12 +27,18 @@
                         'float': 'float 6s ease-in-out infinite',
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'glow': 'glow 2s ease-in-out infinite',
-                        'orbit': 'orbit 20s linear infinite'
+                        'orbit': 'orbit 20s linear infinite',
+                        'spin-slow': 'spin 10s linear infinite',
+                        'bounce-soft': 'bounce-soft 3s ease-in-out infinite'
                     },
                     keyframes: {
                         float: {
                             '0%, 100%': { transform: 'translateY(0)' },
                             '50%': { transform: 'translateY(-20px)' }
+                        },
+                        'bounce-soft': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
                         },
                         glow: {
                             '0%, 100%': { opacity: 1 },
@@ -46,189 +53,203 @@
             }
         }
     </script>
+    <style>
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 0.8; transform: scale(1); }
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: currentColor;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .icon-hover {
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .icon-hover:hover {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #030014;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #3b82f6;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2563eb;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-tap-highlight-color: transparent;
+        }
+    </style>
 </head>
 <body class="bg-space-dark min-h-screen text-gray-100 overflow-x-hidden">
-    <!-- Dynamic Background -->
-    <canvas id="starfield" class="fixed inset-0 w-full h-full pointer-events-none"></canvas>
+    <canvas id="starfield" class="fixed inset-0 w-full h-full pointer-events-none z-0"></canvas>
     
-    <!-- Glow Effects -->
     <div class="fixed inset-0 pointer-events-none">
         <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow"></div>
         <div class="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow delay-1000"></div>
         <div class="absolute bottom-1/4 left-1/3 w-96 h-96 bg-indigo-900/20 rounded-full mix-blend-soft-light filter blur-[128px] animate-pulse-slow delay-2000"></div>
     </div>
 
-    <!-- Header -->
-    <header class="fixed top-0 left-0 right-0 z-50 transition-all duration-500" id="header">
+    <header id="main-header" class="fixed top-0 left-0 right-0 z-50 transition-all duration-500">
         <nav class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
-                <a href="#" class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text hover:scale-105 transition-transform">
+                <a href="#home" class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text hover:scale-105 transition-transform">
                     REVYLUX
                 </a>
                 
-                <button class="lg:hidden text-gray-100 focus:outline-none" id="mobileMenuBtn">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button id="mobile-menu-toggle" class="lg:hidden text-gray-100 focus:outline-none">
+                    <svg class="w-6 h-6 animate-bounce-soft" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-16 6h16"/>
                     </svg>
                 </button>
 
-                <div class="hidden lg:flex items-center space-x-8" id="navLinks">
+                <div id="nav-links" class="hidden lg:flex items-center space-x-8">
                     <a href="#home" class="nav-link hover:text-space-glow transition-colors">Home</a>
-                    <a href="#packages" class="nav-link hover:text-space-glow transition-colors">Projects</a>
+                    <a href="#projects" class="nav-link hover:text-space-glow transition-colors">Projects</a>
                     <a href="#features" class="nav-link hover:text-space-glow transition-colors">Features</a>
-                    <a href="#news" class="nav-link hover:text-space-glow transition-colors">News</a>
                     <a href="#contact" class="nav-link hover:text-space-glow transition-colors">Contact</a>
                 </div>
             </div>
         </nav>
 
-        <div class="lg:hidden hidden bg-space-dark/95 backdrop-blur-lg absolute w-full" id="mobileMenu">
+        <div id="mobile-menu" class="lg:hidden hidden bg-space-dark/95 backdrop-blur-lg absolute w-full">
             <div class="container mx-auto px-6 py-4 space-y-4">
                 <a href="#home" class="block hover:text-space-glow transition-colors">Home</a>
-                <a href="#packages" class="block hover:text-space-glow transition-colors">Projects</a>
+                <a href="#projects" class="block hover:text-space-glow transition-colors">Projects</a>
                 <a href="#features" class="block hover:text-space-glow transition-colors">Features</a>
-                <a href="#news" class="block hover:text-space-glow transition-colors">News</a>
                 <a href="#contact" class="block hover:text-space-glow transition-colors">Contact</a>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden perspective-1000">
-        <!-- Floating Elements -->
-        <div class="absolute inset-0 pointer-events-none perspective-1000">
-            <div class="absolute top-1/4 left-1/4 w-16 h-16 animate-orbit">
-                <div class="w-full h-full bg-blue-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
-            </div>
-            <div class="absolute top-1/3 right-1/4 w-12 h-12 animate-orbit" style="animation-delay: -5s;">
-                <div class="w-full h-full bg-purple-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
-            </div>
-            <div class="absolute bottom-1/4 left-1/3 w-20 h-20 animate-orbit" style="animation-delay: -10s;">
-                <div class="w-full h-full bg-pink-500/30 rounded-lg backdrop-blur-sm rotate-45 animate-float"></div>
-            </div>
-        </div>
+    <main>
+        <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden perspective-1000">
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <div class="space-y-8 transform-gpu">
+                    <h1 class="text-7xl md:text-9xl font-bold mb-6 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text animate-float inline-block">
+                        REVYLUX
+                    </h1>
+                    
+                    <h2 class="text-4xl md:text-5xl font-bold text-space-glow animate-pulse-slow inline-flex items-center gap-4">
+                        <i class="fas fa-crown icon-hover"></i>
+                        <span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">Creative Web Dev</span>
+                    </h2>
+                    
+                    <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                        Innovate, Create, Transform: Your Digital Journey Starts Here
+                    </p>
 
-        <!-- Hero Content -->
-        <div class="container mx-auto px-6 text-center relative z-10">
-            <div class="space-y-8 transform-gpu">
-                <h1 class="text-7xl md:text-9xl font-bold mb-6 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text animate-float inline-block">
-                    REVYLUX
-                </h1>
-                
-                <h2 class="text-4xl md:text-5xl font-bold text-space-glow animate-pulse-slow inline-flex items-center gap-4">
-                    <i class="fas fa-crown"></i>
-                    <span class="bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text">REVYSID</span>
-                </h2>
-                
-                <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-                    Reach for the future with courage, for every step forward brings you closer to your dreams
-                </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-blue-500/20">
+                            <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
+                                <i class="fas fa-clock text-2xl icon-hover"></i>Server UpTime
+                            </h3>
+                            <p id="server-uptime" class="text-gray-300 text-lg">loading...</p>
+                        </div>
+                        <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-purple-500/20">
+                            <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
+                                <i class="fas fa-users text-2xl icon-hover"></i>Total Visitors
+                            </h3>
+                            <p id="total-visitors" class="text-gray-300 text-lg">loading...</p>
+                        </div>
+                    </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                    <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-blue-500/20">
-                        <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
-                            <i class="fas fa-clock text-2xl"></i>Server UpTime
-                        </h3>
-                        <p id="uptime" class="text-gray-300 text-lg">loading..</p>
-                    </div>
-                    <div class="bg-space-light/30 backdrop-blur-lg rounded-xl p-8 transform hover:scale-105 transition-transform duration-500 border border-purple-500/20">
-                        <h3 class="text-xl font-bold mb-4 text-space-glow flex items-center justify-center gap-3">
-                            <i class="fas fa-users text-2xl"></i>Total View
-                        </h3>
-                        <p id="totalViews" class="text-gray-300 text-lg">loading..</p>
-                    </div>
+                    <a href="#projects" class="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 group">
+                        Explore Projects
+                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="min-h-screen py-24 relative flex items-center bg-space-light/10">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block animate-float">
+                        Featured Projects
+                    </h2>
+                    <p class="text-xl text-gray-400 mt-4">Creativity Unleashed, Code Refined</p>
                 </div>
 
-                <a href="#packages" class="inline-flex items-center px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25 group">
-                    Explore Projects
-                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
-                </a>
-            </div>
-        </div>
-
-        <!-- Scroll Indicator -->
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <i class="fas fa-chevron-down text-2xl text-space-glow"></i>
-        </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="packages" class="min-h-screen py-24 relative flex items-center">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-16 space-y-4">
-                <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
-                    Web Dev Projects
-                </h2>
-                <p class="text-xl text-gray-400">Innovation begins where comfort ends</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <!-- IP Tracking Card -->
-                <div class="group">
-                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-blue-500/20 overflow-hidden">
-                        <!-- Background Pattern -->
-                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            
-                            <h3 class="text-2xl font-bold mb-4">IP TRACKING</h3>
-                            
-                            <img src="/api/placeholder/400/200" alt="IP Tracking Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
-                            
-                            <p class="text-gray-400 mb-6">Discover detailed information about any IP address</p>
-                            
-                            <a href="./ip" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 group">
-                                Select Project
-                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="project-card group relative transform transition-all duration-500 hover:scale-105 hover:rotate-3 perspective-1000">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 blur-sm group-hover:blur-lg"></div>
+                        <div class="relative p-6 bg-space-light rounded-xl space-y-6 text-center">
+                            <div class="text-5xl text-space-glow mb-4 flex justify-center animate-spin-slow">
+                                <i class="fas fa-map-marked-alt"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold">IP Tracking</h3>
+                            <p class="text-gray-400">Discover global insights with precise IP geolocation</p>
+                            <a href="#" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:scale-105 transition-transform">
+                                View Project
+                                <i class="fas fa-external-link-alt ml-2"></i>
                             </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- Login Card -->
-                <div class="group">
-                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-purple-500/20 overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">           
-                            <h3 class="text-2xl font-bold mb-4">Login</h3>
-                            
-                            <img src="/api/placeholder/400/200" alt="Login Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
-                            
-                            <p class="text-gray-400 mb-6">Login to this web</p>
-                            
-                            <div class="space-y-4 mb-8">
-                            </div><a href="./login" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium transition-all hover:scale-105 group">
-                                Select Project
-                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-2 transition-transform"></i>
+                    <div class="project-card group relative transform transition-all duration-500 hover:scale-105 hover:-rotate-3 perspective-1000">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 blur-sm group-hover:blur-lg"></div>
+                        <div class="relative p-6 bg-space-light rounded-xl space-y-6 text-center">
+                            <div class="text-5xl text-space-glow mb-4 flex justify-center animate-bounce-soft">
+                                <i class="fas fa-user-lock"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold">Secure Login</h3>
+                            <p class="text-gray-400">Advanced authentication with multi-layered security</p>
+                            <a href="#" class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:scale-105 transition-transform">
+                                View Project
+                                <i class="fas fa-external-link-alt ml-2"></i>
                             </a>
                         </div>
                     </div>
-                </div>
 
-                <!-- RealTime Chat Card -->
-                <div class="group">
-                    <div class="relative bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 transform hover:scale-105 transition-all duration-500 border border-pink-500/20 overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-red-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="text-4xl text-space-glow mb-6 transform group-hover:scale-110 transition-transform duration-500">
+                    <div class="project-card group relative transform transition-all duration-500 hover:scale-105 hover:rotate-3 perspective-1000">
+                        <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-red-600 rounded-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 blur-sm group-hover:blur-lg"></div>
+                        <div class="relative p-6 bg-space-light rounded-xl space-y-6 text-center">
+                            <div class="text-5xl text-space-glow mb-4 flex justify-center animate-spin-slow">
                                 <i class="fas fa-comments"></i>
                             </div>
-                            
-                            <h3 class="text-2xl font-bold mb-4">RealTime Chat</h3>
-                            
-                            <img src="/api/placeholder/400/200" alt="Chat Preview" class="w-full h-32 object-cover rounded-lg mb-6 transform group-hover:scale-105 transition-transform duration-500"/>
-                            
-                            <p class="text-gray-400 mb-6">Real-time chat for instant messaging and live updates</p>
-                            
-                            <div class="space-y-4 mb-8">
-                                <div class="text-gray-300">
-                                    <span class="px-3 py-1 rounded-full bg-pink-500/20 text-pink-400">Coming Soon</span>
-                                </div>
-                            </div>
-                            
-                            <button disabled class="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 text-white font-medium opacity-50 cursor-not-allowed">
+                    <h3 class="text-2xl font-bold">Real-Time Chat</h3>
+                            <p class="text-gray-400">Instant messaging with advanced features</p>
+                            <button disabled class="inline-flex items-center px-6 py-3 rounded-full bg-gray-600 text-white opacity-50 cursor-not-allowed">
                                 Coming Soon
                                 <i class="fas fa-lock ml-2"></i>
                             </button>
@@ -236,88 +257,91 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Features Section -->
-<!--    <section id="features" class="min-h-screen py-24 relative flex items-center bg-space-light/20">
-        <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
-                    Core Features
-                </h2>
-                <p class="text-xl text-gray-400 mt-4">Explore our innovative solutions</p>
-            </div>
+        <section id="features" class="min-h-screen py-24 relative flex items-center bg-space-light/20">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
+                        Core Features
+                    </h2>
+                    <p class="text-xl text-gray-400 mt-4">Innovative Solutions, Seamless Experience</p>
+                </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-    
-                <div class="group">
-                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-blue-500/20 transition-all duration-500 hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                                <i class="fas fa-rocket text-2xl text-blue-400"></i>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="feature-card group relative transform transition-all duration-500 hover:scale-105 perspective-1000">
+                        <div class="p-8 bg-space-light/30 backdrop-blur-lg rounded-2xl border border-blue-500/20 text-center">
+                            <div class="w-24 h-24 mx-auto mb-6 bg-blue-500/20 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                                <i class="fas fa-rocket text-4xl text-blue-400 animate-float"></i>
                             </div>
-                            
-                            <h3 class="text-xl font-bold mb-4 text-white">Fast Performance</h3>
-                            <p class="text-gray-400">Lightning-fast load times and smooth animations for the best user experience</p>
+                            <h3 class="text-2xl font-bold mb-4 text-white">Lightning Fast</h3>
+                            <p class="text-gray-400">Optimized performance with cutting-edge technologies</p>
                         </div>
                     </div>
-                </div>
-    
-                <div class="group">
-                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-purple-500/20 transition-all duration-500 hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-pink-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                                <i class="fas fa-mobile-alt text-2xl text-purple-400"></i>
+
+                    <div class="feature-card group relative transform transition-all duration-500 hover:scale-105 perspective-1000">
+                        <div class="p-8 bg-space-light/30 backdrop-blur-lg rounded-2xl border border-purple-500/20 text-center">
+                            <div class="w-24 h-24 mx-auto mb-6 bg-purple-500/20 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                                <i class="fas fa-mobile-alt text-4xl text-purple-400 animate-bounce-soft"></i>
                             </div>
-                            
-                            <h3 class="text-xl font-bold mb-4 text-white">Responsive Design</h3>
-                            <p class="text-gray-400">Perfectly optimized for all devices and screen sizes</p>
+                            <h3 class="text-2xl font-bold mb-4 text-white">Responsive Design</h3>
+                            <p class="text-gray-400">Seamless experience across all devices</p>
                         </div>
                     </div>
-                </div>
-    
-                <div class="group">
-                    <div class="relative p-6 rounded-2xl bg-space-light/30 backdrop-blur-lg border border-pink-500/20 transition-all duration-500 hover:scale-105">
-                        <div class="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-red-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                        
-                        <div class="relative z-10">
-                            <div class="w-16 h-16 rounded-full bg-pink-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
-                                <i class="fas fa-shield-alt text-2xl text-pink-400"></i>
+
+                    <div class="feature-card group relative transform transition-all duration-500 hover:scale-105 perspective-1000">
+                        <div class="p-8 bg-space-light/30 backdrop-blur-lg rounded-2xl border border-pink-500/20 text-center">
+                            <div class="w-24 h-24 mx-auto mb-6 bg-pink-500/20 rounded-full flex items-center justify-center transform group-hover:scale-110 transition-transform">
+                                <i class="fas fa-shield-alt text-4xl text-pink-400 animate-spin-slow"></i>
                             </div>
-                            
-                            <h3 class="text-xl font-bold mb-4 text-white">Secure & Reliable</h3>
-                            <p class="text-gray-400">Built with the latest security standards and reliable infrastructure</p>
+                            <h3 class="text-2xl font-bold mb-4 text-white">Advanced Security</h3>
+                            <p class="text-gray-400">Multi-layered protection for your digital assets</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section> -->
+        </section>
 
-    <!-- Footer -->
+        <section id="contact" class="min-h-screen py-24 relative flex items-center bg-space-light/10">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-16">
+                    <h2 class="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text inline-block">
+                        Get In Touch
+                    </h2>
+                    <p class="text-xl text-gray-400 mt-4">Let's Create Something Amazing Together</p>
+                </div>
+
+                <div class="max-w-2xl mx-auto bg-space-light/30 backdrop-blur-lg rounded-2xl p-8 shadow-lg">
+                    <form id="contact-form" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="text" placeholder="Name" required class="w-full bg-space-dark/50 border border-blue-500/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="email" placeholder="Email" required class="w-full bg-space-dark/50 border border-purple-500/20 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <textarea placeholder="Your Message" required class="w-full bg-space-dark/50 border border-pink-500/20 rounded-lg px-4 py-3 h-32 focus:outline-none focus:ring-2 focus:ring-pink-500"></textarea>
+                        <button type="submit" class="w-full px-8 py-4 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
     <footer class="relative py-16 bg-space-light/30 backdrop-blur-lg">
         <div class="container mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                 <div class="space-y-6">
                     <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">About</h3>
-                    <p class="text-gray-400">Frontend developer focused on building responsive, user-friendly web applications. Passionate about learning and tackling new challenges in web development.</p>
+                    <p class="text-gray-400">Creative web developer passionate about building innovative, user-centric digital experiences that push the boundaries of technology.</p>
                     <div class="flex space-x-4">
-                        <a href="https://discord.gg/ZK6jrrK2" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-blue-500/20 transition-colors group">
-                            <i class="fab fa-discord text-xl text-gray-400 group-hover:text-blue-400 transition-colors"></i>
+                        <a href="#" class="icon-hover w-12 h-12 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-blue-500/20 transition-colors group">
+                            <i class="fab fa-discord text-2xl text-gray-400 group-hover:text-blue-400"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-purple-500/20 transition-colors group">
-                            <i class="fab fa-twitter text-xl text-gray-400 group-hover:text-purple-400 transition-colors"></i>
+                        <a href="#" class="icon-hover w-12 h-12 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-purple-500/20 transition-colors group">
+                            <i class="fab fa-twitter text-2xl text-gray-400 group-hover:text-purple-400"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-pink-500/20 transition-colors group">
-                            <i class="fab fa-instagram text-xl text-gray-400 group-hover:text-pink-400 transition-colors"></i>
-                        </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-red-500/20 transition-colors group">
-                            <i class="fab fa-youtube text-xl text-gray-400 group-hover:text-red-400 transition-colors"></i>
+                        <a href="#" class="icon-hover w-12 h-12 rounded-full bg-space-light/50 flex items-center justify-center hover:bg-pink-500/20 transition-colors group">
+                            <i class="fab fa-instagram text-2xl text-gray-400 group-hover:text-pink-400"></i>
                         </a>
                     </div>
                 </div>
@@ -325,62 +349,23 @@
                 <div class="space-y-6">
                     <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Quick Links</h3>
                     <ul class="space-y-4">
-                        <li>
-                            <a href="#home" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Home
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#packages" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Projects
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#features" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Features
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#news" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                News
-                            </a>
-                        </li>
+                        <li><a href="#home" class="text-gray-400 hover:text-space-glow transition-colors">Home</a></li>
+                        <li><a href="#projects" class="text-gray-400 hover:text-space-glow transition-colors">Projects</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-space-glow transition-colors">Features</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-space-glow transition-colors">Contact</a></li>
                     </ul>
                 </div>
 
                 <div class="space-y-6">
-                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Support</h3>
+                    <h3 class="text-2xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Legal</h3>
                     <ul class="space-y-4">
-                        <li>
-                            <a href="#" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Help Center
-                            </a>
-                        </li>
-                        <li>
-                            <a href="./terms-of-service" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Terms of Service
-                            </a>
-                        </li>
-                        <li>
-                            <a href="./privacy-policy" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Privacy Policy
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#contact" class="text-gray-400 hover:text-space-glow transition-colors flex items-center gap-2 group">
-                                <i class="fas fa-chevron-right text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                Contact Us
-                            </a>
-                        </li>
+                        <li><a href="#" class="text-gray-400 hover:text-space-glow transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-space-glow transition-colors">Terms of Service</a></li>
                     </ul>
                 </div>
+            </div>
+            <div class="mt-12 text-center text-gray-500 text-sm">
+                © 2024 REVYLUX. All rights reserved.
             </div>
         </div>
     </footer>
@@ -395,7 +380,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
             
-            // Create stars
             const starGeometry = new THREE.BufferGeometry();
             const starMaterial = new THREE.PointsMaterial({
                 color: 0xFFFFFF,
@@ -417,7 +401,6 @@
             
             camera.position.z = 5;
             
-            // Animation
             const animate = () => {
                 requestAnimationFrame(animate);
                 stars.rotation.x += 0.0002;
@@ -427,7 +410,6 @@
             
             animate();
             
-            // Handle resize
             window.addEventListener('resize', () => {
                 const newWidth = window.innerWidth;
                 const newHeight = window.innerHeight;
@@ -437,96 +419,15 @@
             });
         };
 
-        // Initialize GSAP
-        gsap.registerPlugin(ScrollTrigger);
+        // Mobile Menu Toggle
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
 
-        // Mobile menu functionality
-        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const header = document.getElementById('header');
-
-        mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuToggle.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
 
-        // Scroll effects
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                header.classList.add('bg-space-dark/95', 'backdrop-blur-lg', 'shadow-lg', 'border-b', 'border-blue-500/20');
-            } else {
-                header.classList.remove('bg-space-dark/95', 'backdrop-blur-lg', 'shadow-lg', 'border-b', 'border-blue-500/20');
-            }
-        });
-
-        // GSAP Animations
-        const setupAnimations = () => {
-            // Header fade in
-            gsap.from('header', {
-                y: -100,
-                opacity: 0,
-                duration: 1,
-                ease: 'power4.out'
-            });
-
-            // Hero content animation
-            gsap.from('#home .container > *', {
-                y: 100,
-                opacity: 0,
-                duration: 1,
-                stagger: 0.2,
-                ease: 'power4.out'
-            });
-
-            // Project cards animation
-            gsap.utils.toArray('#packages .group').forEach((card, index) => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: 'top bottom-=100',
-                        toggleActions: 'play none none reverse'
-                    },
-                    y: 100,
-                    opacity: 0,
-                    duration: 1,
-                    delay: index * 0.2,
-                    ease: 'power4.out'
-                });
-            });
-
-            // Features animation
-            gsap.utils.toArray('#features .group').forEach((feature, index) => {
-                gsap.from(feature, {
-                    scrollTrigger: {
-                        trigger: feature,
-                        start: 'top bottom-=100',
-                        toggleActions: 'play none none reverse'
-                    },
-                    y: 60,
-                    opacity: 0,
-                    duration: 1,
-                    delay: index * 0.2,
-                    ease: 'power4.out'
-                });
-            });
-
-            // Footer sections animation
-            gsap.utils.toArray('footer > div > div > div').forEach((section, index) => {
-                gsap.from(section, {
-                    scrollTrigger: {
-                        trigger: section,
-                        start: 'top bottom-=50',
-                        toggleActions: 'play none none reverse'
-                    },
-                    y: 50,
-                    opacity: 0,
-                    duration: 1,
-                    delay: index * 0.2,
-                    ease: 'power4.out'
-                });
-            });
-        };
-
-        // Smooth scroll
+        // Smooth Scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -543,111 +444,80 @@
                         ease: 'power4.inOut'
                     });
                     
-                    // Close mobile menu if open
+                    // Close mobile menu
                     if (!mobileMenu.classList.contains('hidden')) {
                         mobileMenu.classList.add('hidden');
                     }
                 }
             });
         });
-        // Parallax effect on scroll
-        const setupParallax = () => {
-            window.addEventListener('scroll', () => {
-                const scrolled = window.pageYOffset;
-                const parallaxElements = document.querySelectorAll('.animate-float');
-                
-                parallaxElements.forEach(element => {
-                    const speed = 0.5;
-                    element.style.transform = `translateY(${scrolled * speed}px)`;
+
+        // GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        const setupAnimations = () => {
+            // Header and Initial Load
+            gsap.from('header', { y: -100, opacity: 0, duration: 1, ease: 'power4.out' });
+            gsap.from('#home .container > *', { y: 100, opacity: 0, duration: 1, stagger: 0.2, ease: 'power4.out' });
+
+            // Project Cards
+            gsap.utils.toArray('.project-card').forEach((card, index) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 100,
+                    opacity: 0,
+                    duration: 1,
+                    delay: index * 0.2,
+                    ease: 'power4.out'
+                });
+            });
+
+            // Feature Cards
+            gsap.utils.toArray('.feature-card').forEach((feature, index) => {
+                gsap.from(feature, {
+                    scrollTrigger: {
+                        trigger: feature,
+                        start: 'top bottom-=100',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 60,
+                    opacity: 0,
+                    duration: 1,
+                    delay: index * 0.2,
+                    ease: 'power4.out'
                 });
             });
         };
 
-        // Initialize everything
+        // Contact Form Submission
+        const contactForm = document.getElementById('contact-form');
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Message sent! We will get back to you soon.');
+            contactForm.reset();
+        });
+
+        // Initialize Everything
         const init = () => {
             createStarfield();
             setupAnimations();
-            setupParallax();
-            updateMockData();
-            setInterval(updateMockData, 5000); // Update mock data every 5 seconds
+            updateServerData();
         };
 
-        // Run initialization when DOM is loaded
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
-
-    <style>
-        @keyframes twinkle {
-            0%, 100% { opacity: 0; transform: scale(0.5); }
-            50% { opacity: 0.8; transform: scale(1); }
-        }
-
-        .perspective-1000 {
-            perspective: 1000px;
-        }
-
-        .nav-link {
-            position: relative;
-        }
-
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: currentColor;
-            transition: width 0.3s ease;
-        }
-
-        .nav-link:hover::after {
-            width: 100%;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #030014;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #3b82f6;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #2563eb;
-        }
-
-        /* Smooth scrolling */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Better text rendering */
-        * {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        /* Prevent blue highlight on mobile */
-        * {
-            -webkit-tap-highlight-color: transparent;
-        }
-    </style>
-    <script type="module">
-    import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
+import { updateAndDisplayViews, calculateUptime } from "./static/js/activity.js";
 
     // Panggil fungsi untuk memperbarui dan menampilkan views
     updateAndDisplayViews("totalViews");
 
     // Panggil fungsi untuk menghitung dan menampilkan uptime
     calculateUptime("uptime");
-        
+
+        // Run initialization
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
