@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VidMax Player</title>
+    <title>VidMax Player Pro</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
@@ -98,7 +98,7 @@
             height: 0;
         }
 
-        #videoPlayer {
+        #customPlayer {
             position: absolute;
             top: 0;
             left: 0;
@@ -115,8 +115,8 @@
             background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
             padding: 20px;
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            gap: 10px;
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -125,8 +125,8 @@
             opacity: 1;
         }
 
-        .progress-bar {
-            flex: 1;
+        .progress-container {
+            width: 100%;
             height: 5px;
             background: rgba(255, 255, 255, 0.3);
             border-radius: 5px;
@@ -134,11 +134,42 @@
             position: relative;
         }
 
-        .progress {
+        .progress-hover {
+            position: absolute;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 5px;
+            width: 0;
+        }
+
+        .progress-bar {
+            position: absolute;
             height: 100%;
             background: var(--primary-color);
             border-radius: 5px;
             width: 0;
+        }
+
+        .progress-handle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            display: none;
+        }
+
+        .progress-container:hover .progress-handle {
+            display: block;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
         .control-button {
@@ -147,10 +178,46 @@
             color: white;
             cursor: pointer;
             padding: 5px;
+            position: relative;
         }
 
         .control-button:hover {
             color: var(--primary-color);
+        }
+
+        .time-display {
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            min-width: 120px;
+            border-radius: 8px;
+            padding: 8px 0;
+            z-index: 1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .playlist {
@@ -195,6 +262,24 @@
             color: #aaa;
         }
 
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            display: none;
+        }
+
+        .control-button:hover .tooltip {
+            display: block;
+        }
+
         @media (max-width: 768px) {
             .search-container {
                 flex-direction: column;
@@ -218,7 +303,7 @@
 </head>
 <body>
     <nav>
-        <div class="logo">VidMax</div>
+        <div class="logo">VidMax Pro</div>
         <div class="nav-buttons">
             <button onclick="toggleTheme()">
                 <i class="fas fa-moon"></i>
@@ -234,23 +319,64 @@
 
         <div class="player-container">
             <div class="video-container">
-                <video id="videoPlayer" controls>
+                <video id="customPlayer" crossorigin="anonymous">
                     Your browser does not support the video element.
                 </video>
             </div>
             <div class="controls">
-                <button class="control-button" onclick="togglePlay()">
-                    <i class="fas fa-play"></i>
-                </button>
-                <div class="progress-bar" onclick="seek(event)">
-                    <div class="progress"></div>
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-hover"></div>
+                    <div class="progress-bar"></div>
+                    <div class="progress-handle"></div>
                 </div>
-                <button class="control-button" onclick="toggleMute()">
-                    <i class="fas fa-volume-up"></i>
-                </button>
-                <button class="control-button" onclick="toggleFullscreen()">
-                    <i class="fas fa-expand"></i>
-                </button>
+                <div class="control-row">
+                    <button class="control-button" onclick="togglePlay()">
+                        <i class="fas fa-play"></i>
+                        <span class="tooltip">Play/Pause</span>
+                    </button>
+                    <button class="control-button" onclick="skip(-10)">
+                        <i class="fas fa-undo"></i>
+                        <span class="tooltip">Mundur 10 detik</span>
+                    </button>
+                    <button class="control-button" onclick="skip(10)">
+                        <i class="fas fa-redo"></i>
+                        <span class="tooltip">Maju 10 detik</span>
+                    </button>
+                    <div class="dropdown">
+                        <button class="control-button">
+                            <i class="fas fa-volume-up"></i>
+                            <span class="tooltip">Volume</span>
+                        </button>
+                        <div class="dropdown-content">
+                            <input type="range" min="0" max="100" value="100" oninput="adjustVolume(this.value)">
+                        </div>
+                    </div>
+                    <span class="time-display">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    </span>
+                    <div class="dropdown">
+                        <button class="control-button">
+                            <i class="fas fa-cog"></i>
+                            <span class="tooltip">Pengaturan</span>
+                        </button>
+                        <div class="dropdown-content">
+                            <div class="dropdown-item" onclick="toggleLoop()">Loop Video</div>
+                            <div class="dropdown-item" onclick="togglePIP()">Picture in Picture</div>
+                            <div class="dropdown-item" onclick="changeSpeed(0.5)">0.5x Speed</div>
+                            <div class="dropdown-item" onclick="changeSpeed(1.0)">1.0x Speed</div>
+                            <div class="dropdown-item" onclick="changeSpeed(1.5)">1.5x Speed</div>
+                            <div class="dropdown-item" onclick="changeSpeed(2.0)">2.0x Speed</div>
+                        </div>
+                    </div>
+                    <button class="control-button" onclick="togglePIP()">
+                        <i class="fas fa-clone"></i>
+                        <span class="tooltip">Picture in Picture</span>
+                    </button>
+                    <button class="control-button" onclick="toggleFullscreen()">
+                        <i class="fas fa-expand"></i>
+                        <span class="tooltip">Fullscreen</span>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -263,18 +389,24 @@
     </div>
 
     <script>
-        const videoPlayer = document.getElementById('videoPlayer');
-        const progress = document.querySelector('.progress');
+        const player = document.getElementById('customPlayer');
+        const progressBar = document.querySelector('.progress-bar');
+        const progressHover = document.querySelector('.progress-hover');
+        const progressHandle = document.querySelector('.progress-handle');
+        const progressContainer = document.getElementById('progressContainer');
+        const currentTimeDisplay = document.getElementById('currentTime');
+        const durationDisplay = document.getElementById('duration');
         const playlistItems = document.getElementById('playlistItems');
         let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
+        let isDragging = false;
 
         function loadVideo() {
             const url = document.getElementById('videoUrl').value;
             if (!url) return;
 
             try {
-                videoPlayer.src = url;
-                videoPlayer.play();
+                player.src = url;
+                player.play();
                 addToHistory(url);
                 updatePlaylist();
             } catch (error) {
@@ -302,48 +434,180 @@
                     </div>
                 `;
                 playlistItem.onclick = () => {
-                    videoPlayer.src = item.url;
-                    videoPlayer.play();
+                    player.src = item.url;
+                    player.play();
                 };
                 playlistItems.appendChild(playlistItem);
             });
         }
 
         function togglePlay() {
-            if (videoPlayer.paused) {
-                videoPlayer.play();
+            if (player.paused) {
+                player.play();
                 document.querySelector('.fa-play').classList.replace('fa-play', 'fa-pause');
             } else {
-                videoPlayer.pause();
+                player.pause();
                 document.querySelector('.fa-pause').classList.replace('fa-pause', 'fa-play');
             }
         }
 
-        function toggleMute() {
-            videoPlayer.muted = !videoPlayer.muted;
+        function skip(seconds) {
+            player.currentTime += seconds;
+        }
+
+        function adjustVolume(value) {
+            player.volume = value / 100;
             const icon = document.querySelector('.fa-volume-up, .fa-volume-mute');
-            icon.classList.toggle('fa-volume-up');
-            icon.classList.toggle('fa-volume-mute');
+            if (value == 0) {
+                icon.classList.replace('fa-volume-up', 'fa-volume-mute');
+            } else {
+                icon.classList.replace('fa-volume-mute', 'fa-volume-up');
+            }
+        }
+
+        function toggleLoop() {
+            player.loop = !player.loop;
+        }
+
+        async function togglePIP() {
+            try {
+                if (document.pictureInPictureElement) {
+                    await document.exitPictureInPicture();
+                } else {
+                    await player.requestPictureInPicture();
+                }
+            } catch (error) {
+                console.error('PIP error:', error);
+            }
+        }
+
+        function changeSpeed(speed) {
+            player.playbackRate = speed;
         }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                videoPlayer.requestFullscreen();
+                player.requestFullscreen();
             } else {
                 document.exitFullscreen();
             }
         }
 
-        function seek(event) {
-            const percent = event.offsetX / event.target.offsetWidth;
-            videoPlayer.currentTime = percent * videoPlayer.duration;
-        }
-
-        videoPlayer.addEventListener('timeupdate', () => {
-            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-            progress.style.width = `${percent}%`;
+        // Progress bar handling
+        progressContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            updateProgress(e);
         });
 
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                updateProgress(e);
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        progressContainer.addEventListener('mousemove', (e) => {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            progressHover.style.width = `${percent * 100}%`;
+        });
+
+        progressContainer.addEventListener('mouseleave', () => {
+            progressHover.style.width = '0';
+        });
+
+        function updateProgress(e) {
+            const rect = progressContainer.getBoundingClientRect();
+            const percent = Math.min(Math.max(0, (e.clientX - rect.left) / rect.width), 1);
+            player.currentTime = percent * player.duration;
+            progressBar.style.width = `${percent * 100}%`;
+            progressHandle.style.left = `${percent * 100}%`;
+        }
+
+        // Time formatting
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            if (h > 0) {
+                return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // Player event listeners
+        player.addEventListener('loadedmetadata', () => {
+            durationDisplay.textContent = formatTime(player.duration);
+        });
+
+        player.addEventListener('timeupdate', () => {
+            if (!isDragging) {
+                const percent = (player.currentTime / player.duration);
+                progressBar.style.width = `${percent * 100}%`;
+                progressHandle.style.left = `${percent * 100}%`;
+                currentTimeDisplay.textContent = formatTime(player.currentTime);
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                case 'k':
+                    e.preventDefault();
+                    togglePlay();
+                    break;
+                case 'f':
+                    e.preventDefault();
+                    toggleFullscreen();
+                    break;
+                case 'm':
+                    e.preventDefault();
+                    player.muted = !player.muted;
+                    break;
+                case 'j':
+                    skip(-10);
+                    break;
+                case 'l':
+                    skip(10);
+                    break;
+                case 'arrowleft':
+                    skip(-5);
+                    break;
+                case 'arrowright':
+                    skip(5);
+                    break;
+                case 'arrowup':
+                    e.preventDefault();
+                    player.volume = Math.min(1, player.volume + 0.1);
+                    break;
+                case 'arrowdown':
+                    e.preventDefault();
+                    player.volume = Math.max(0, player.volume - 0.1);
+                    break;
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    e.preventDefault();
+                    player.currentTime = (player.duration * parseInt(e.key)) / 10;
+                    break;
+            }
+        });
+
+        // Double click for fullscreen
+        player.addEventListener('dblclick', toggleFullscreen);
+
+        // Theme toggle
         function toggleTheme() {
             document.body.classList.toggle('light-theme');
             const icon = document.querySelector('.fa-moon, .fa-sun');
@@ -351,8 +615,57 @@
             icon.classList.toggle('fa-sun');
         }
 
+        // Error handling
+        player.addEventListener('error', (e) => {
+            console.error('Video error:', e);
+            alert('Error memuat video. Silakan coba URL yang berbeda.');
+        });
+
+        // Quality settings (if available)
+        player.addEventListener('loadeddata', () => {
+            if (player.videoHeight >= 720) {
+                // Add quality options if available
+                const qualityMenu = document.createElement('div');
+                qualityMenu.className = 'dropdown-item';
+                qualityMenu.innerHTML = `
+                    <div onclick="changeQuality('720p')">720p</div>
+                    <div onclick="changeQuality('480p')">480p</div>
+                    <div onclick="changeQuality('360p')">360p</div>
+                `;
+                document.querySelector('.dropdown-content').appendChild(qualityMenu);
+            }
+        });
+
         // Initialize playlist on load
         updatePlaylist();
+
+        // Add touch support for mobile devices
+        let touchStartX = 0;
+        let touchStartTime = 0;
+
+        player.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartTime = player.currentTime;
+        });
+
+        player.addEventListener('touchmove', (e) => {
+            const diff = (e.touches[0].clientX - touchStartX) / 5;
+            player.currentTime = touchStartTime + diff;
+        });
+
+        // Save player state
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('playerVolume', player.volume);
+            localStorage.setItem('playerTime', player.currentTime);
+        });
+
+        // Restore player state
+        window.addEventListener('load', () => {
+            const savedVolume = localStorage.getItem('playerVolume');
+            if (savedVolume !== null) {
+                player.volume = parseFloat(savedVolume);
+            }
+        });
     </script>
 </body>
 </html>
