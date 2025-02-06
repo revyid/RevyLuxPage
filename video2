@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VidMax Player</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #1a73e8;
+            --secondary-color: #ea4335;
+            --bg-dark: #0f0f0f;
+            --bg-light: #ffffff;
+            --text-light: #ffffff;
+            --text-dark: #0f0f0f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1557b0;
+        }
+
+        .player-container {
+            position: relative;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+        }
+
+        #videoPlayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .player-container:hover .controls {
+            opacity: 1;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 5px;
+            width: 0;
+        }
+
+        .control-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .control-button:hover {
+            color: var(--primary-color);
+        }
+
+        .playlist {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .playlist-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .playlist-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .thumbnail {
+            width: 120px;
+            height: 67.5px;
+            background: #333;
+            border-radius: 8px;
+            margin-right: 15px;
+        }
+
+        .video-info {
+            flex: 1;
+        }
+
+        .video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .video-meta {
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                flex-direction: column;
+            }
+            
+            .controls {
+                padding: 10px;
+            }
+            
+            .playlist-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .thumbnail {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">VidMax</div>
+        <div class="nav-buttons">
+            <button onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="search-container">
+            <input type="text" id="videoUrl" placeholder="Masukkan URL video...">
+            <button onclick="loadVideo()">Play</button>
+        </div>
+
+        <div class="player-container">
+            <div class="video-container">
+                <video id="videoPlayer" controls>
+                    Your browser does not support the video element.
+                </video>
+            </div>
+            <div class="controls">
+                <button class="control-button" onclick="togglePlay()">
+                    <i class="fas fa-play"></i>
+                </button>
+                <div class="progress-bar" onclick="seek(event)">
+                    <div class="progress"></div>
+                </div>
+                <button class="control-button" onclick="toggleMute()">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <button class="control-button" onclick="toggleFullscreen()">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="playlist">
+            <h2>Riwayat Tontonan</h2>
+            <div id="playlistItems">
+                <!-- Playlist items will be added here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const progress = document.querySelector('.progress');
+        const playlistItems = document.getElementById('playlistItems');
+        let watchHistory = JSON.parse(localStorage.getItem('watchHistory')) || [];
+
+        function loadVideo() {
+            const url = document.getElementById('videoUrl').value;
+            if (!url) return;
+
+            try {
+                videoPlayer.src = url;
+                videoPlayer.play();
+                addToHistory(url);
+                updatePlaylist();
+            } catch (error) {
+                alert('URL video tidak valid');
+            }
+        }
+
+        function addToHistory(url) {
+            const timestamp = new Date().toISOString();
+            watchHistory.unshift({ url, timestamp });
+            if (watchHistory.length > 10) watchHistory.pop();
+            localStorage.setItem('watchHistory', JSON.stringify(watchHistory));
+        }
+
+        function updatePlaylist() {
+            playlistItems.innerHTML = '';
+            watchHistory.forEach((item, index) => {
+                const playlistItem = document.createElement('div');
+                playlistItem.className = 'playlist-item';
+                playlistItem.innerHTML = `
+                    <div class="thumbnail"></div>
+                    <div class="video-info">
+                        <div class="video-title">Video ${index + 1}</div>
+                        <div class="video-meta">Ditonton pada ${new Date(item.timestamp).toLocaleString()}</div>
+                    </div>
+                `;
+                playlistItem.onclick = () => {
+                    videoPlayer.src = item.url;
+                    videoPlayer.play();
+                };
+                playlistItems.appendChild(playlistItem);
+            });
+        }
+
+        function togglePlay() {
+            if (videoPlayer.paused) {
+                videoPlayer.play();
+                document.querySelector('.fa-play').classList.replace('fa-play', 'fa-pause');
+            } else {
+                videoPlayer.pause();
+                document.querySelector('.fa-pause').classList.replace('fa-pause', 'fa-play');
+            }
+        }
+
+        function toggleMute() {
+            videoPlayer.muted = !videoPlayer.muted;
+            const icon = document.querySelector('.fa-volume-up, .fa-volume-mute');
+            icon.classList.toggle('fa-volume-up');
+            icon.classList.toggle('fa-volume-mute');
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                videoPlayer.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        function seek(event) {
+            const percent = event.offsetX / event.target.offsetWidth;
+            videoPlayer.currentTime = percent * videoPlayer.duration;
+        }
+
+        videoPlayer.addEventListener('timeupdate', () => {
+            const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+            progress.style.width = `${percent}%`;
+        });
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const icon = document.querySelector('.fa-moon, .fa-sun');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        }
+
+        // Initialize playlist on load
+        updatePlaylist();
+    </script>
+</body>
+</html>
